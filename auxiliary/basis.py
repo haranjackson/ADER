@@ -6,7 +6,7 @@ from options import N
 
 
 def quad():
-    """ Returns Legendre-Gauss nodes and weights, scaled to [0,1]
+    """ Returns the Legendre-Gauss nodes and weights, scaled to [0,1]
     """
     nodes, weights = leggauss(N+1)
     nodes += 1
@@ -16,7 +16,7 @@ def quad():
     return nodes, gaps, weights
 
 def basis_polys():
-    """ Returns basis polynomials and their derivatives and antiderivatives
+    """ Returns the basis polynomials and their derivatives and antiderivatives
     """
     nodes, _, _ = quad()
     ψ = [lagrange(nodes,eye(N+1)[i]) for i in range(N+1)]
@@ -25,7 +25,7 @@ def basis_polys():
     return ψ, ψDer, ψInt
 
 def end_values():
-    """ Returns the values of th basis functions at 0,1
+    """ Returns the values of the basis functions at 0 and 1
     """
     ψ, _, _ = basis_polys()
     ret = zeros([N+1, 2])

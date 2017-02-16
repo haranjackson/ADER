@@ -2,7 +2,7 @@ from numpy import concatenate, int64, kron, ones
 
 
 def extend(inarray, extension, d):
-    """ Extends the input array by M cells on each surface
+    """ Extends the input array by the specified number of cells in the dth axis at both ends
     """
     n = inarray.shape[d]
     reps = concatenate(([extension+1], ones(n-2), [extension+1])).astype(int64)

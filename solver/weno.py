@@ -2,11 +2,11 @@
 """
 from itertools import product
 
-from numpy import ceil, floor, zeros, multiply as mult
+from numpy import ceil, dot, einsum, floor, zeros, multiply as mult
 from scipy.linalg import solve
 
 from options import rc, λc, λs, ε, ndim, N, n
-from weno_matrices import coefficient_matrices, oscillation_indicator
+from .weno_matrices import coefficient_matrices, oscillation_indicator
 from auxiliary.functions import extend
 
 
@@ -32,8 +32,8 @@ def weights(w, λ):
 def coeffs(u1):
     """ Calculate coefficients of basis polynomials and weights
     """
-    wL  = solve(ML, u1[0 : N+1])
-    wR  = solve(MR, u1[N : -1])
+    wL  = solve(ML, u1[:N+1])
+    wR  = solve(MR, u1[N:])
     oL  = weights(wL, λs)
     oR  = weights(wR, λs)
     if N==1:

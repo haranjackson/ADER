@@ -6,7 +6,7 @@ from scipy.optimize import newton_krylov
 
 from options import stiff, superStiff, hidalgo, TOL, ndim, dxi, MAX_ITER, N, NT, n
 from system import source, jacobian, flux, block
-from dg_matrices import system_matrices
+from .dg_matrices import system_matrices
 from auxiliary.basis import quad, derivative_values
 
 

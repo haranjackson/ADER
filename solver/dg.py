@@ -6,7 +6,7 @@ from scipy.optimize import newton_krylov
 
 from options import stiff, superStiff, hidalgo, TOL, ndim, dxi, MAX_ITER, N, NT, n
 from system import source, jacobian, flux, block
-from .dg_matrices import system_matrices
+from dg_matrices import system_matrices
 from auxiliary.basis import quad, derivative_values
 
 
@@ -19,20 +19,18 @@ def rhs(q, Ww, dt):
     """ Returns the right handside of the linear system governing the coefficients of qh
     """
     Tq = dot(T, q)
-    Sq = zeros([NT, n])
     Fq = zeros([ndim, NT, n])
-    Bq = zeros([ndim, NT, n])
-    for b in range(NT):
-        Sq[b] = source(q)
-        for d in range(ndim):
-            Fq[d,b] = flux(q[b], d)
-            Bq[d,b] = dot(block(q[b],d), Tq[d,b])
+    ret = zeros([NT, n])
 
-    ret = Sq
-    for d in range(ndim):
-        ret -= Bq[d] / dxi[d]
+    for b in range(NT):
+        ret[b] = source(q[b])
+        for d in range(ndim):
+            ret[b] -= dot(block(q[b],d), Tq[d,b]) / dxi[d]
     ret *= Z
 
+    for b in range(NT):
+        for d in range(ndim):
+            Fq[d,b] = flux(q[b], d)
     for d in range(ndim):
         ret -= dot(V[d], Fq[d]) / dxi[d]
 

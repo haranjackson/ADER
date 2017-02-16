@@ -1,5 +1,5 @@
 from numpy import zeros
-from scipy.linalg import eig
+from scipy.linalg import eigvals
 
 from options import n, ndim
 from auxiliary.functions import extend
@@ -30,8 +30,7 @@ def max_abs_eigs(q, d):
         direction d
     """
     J = jacobian(q, d)
-    eigs = eig(J, left=0, right=0)
-    return max(abs(eigs))
+    return max(abs(eigvals(J)))
 
 def boundary_condition(u):
     """ Returns a copy of u with transmissive boundary conditions applied

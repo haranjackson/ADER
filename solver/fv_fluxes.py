@@ -1,4 +1,3 @@
-from numba import jit
 from numpy import complex128, dot, zeros
 from scipy.linalg import eig, solve
 
@@ -9,27 +8,29 @@ from auxiliary.basis import quad
 
 nodes, _, weights = quad()
 
-@jit
+
 def Bint(qL, qR, d):
     """ Returns the jump matrix for B, in the dth direction
     """
+    Δq = qR - qL
     temp = zeros([n, n])
     for i in range(N+1):
-        q = qL + nodes[i] * (qR - qL)
+        q = qL + nodes[i] * Δq
         temp += weights[i] * block(q, d)
-    return dot(temp, qR-qL)
+    return dot(temp, Δq)
 
 def Aint(qL, qR, d):
     """ Returns the Osher-Solomon jump matrix for A, in the dth direction
         NB: eig function should be replaced with analytical function, if known
     """
     ret = zeros(n, dtype=complex128)
+    Δq = qR - qL
     for i in range(N+1):
-        q = qL + nodes[i] * (qR - qL)
+        q = qL + nodes[i] * Δq
         J = jacobian(q, d)
-        eigs, R = eig(J, overwrite_a=1, check_finite=0)
-        b = solve(R, qR-qL, overwrite_b=1, check_finite=0)
-        ret += weights[i] * dot(R, abs(eigs)*b)
+        λ, R = eig(J, overwrite_a=1, check_finite=0)
+        b = solve(R, Δq, check_finite=0)
+        ret += weights[i] * dot(R, abs(λ)*b)
     return ret.real
 
 def s_max(qL, qR, d):

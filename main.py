@@ -1,18 +1,43 @@
-from data import u0, dt
-from options import para
-from system import boundary_condition
-from auxiliary.parallel import para_predictor, para_fv_terms
-from solver.weno import reconstruct
-from solver.dg import predictor
-from solver.fv import fv_terms
+import matplotlib.pyplot as plt
+
+from joblib import Parallel
+
+from solvers.iterator import ader_stepper, timestep
+from options import NCORE
 
 
-uBC = boundary_condition(u0)    # Apply boundary conditions
-wh = reconstruct(uBC)           # Perform WENO reconstruction
+def main(u, tf, BC, pool):
 
-if para:
-    qh = para_predictor(wh, dt)           # Calculate DG predictor (in parallel)
-    u1 = u0 + para_fv_terms(qh, dt)       # Update with FV terms (in parallel)
-else:
-    qh = predictor(wh, dt)                # Calculate DG predictor
-    u1 = u0 + fv_terms(qh, dt)            # Update with FV terms
+    t = 0
+    count = 0
+
+    while t < tf:
+
+        dt = timestep(u, count, t, tf)
+
+        ader_stepper(pool, u, BC, dt)
+
+        t += dt
+        count += 1
+
+        print(count, ': t =', t)
+
+    return u
+
+
+if __name__ == "__main__":
+
+    # Test taken from DOI:10.1016/j.jcp.2016.02.015
+    from example.test import viscous_shock_IC
+    from example.boundaries import transmissive_BC
+
+    u, tf = viscous_shock_IC()
+    pool = Parallel(n_jobs=NCORE)
+    u = main(u, tf, transmissive_BC, pool)
+
+    plt.figure(1)
+    plt.plot(u[:,0,0,0])
+    plt.title('density')
+    plt.figure(2)
+    plt.plot(u[:,0,0,2]/u[:,0,0,0])
+    plt.title('velocity')

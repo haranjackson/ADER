@@ -1,41 +1,63 @@
 from numpy import zeros
-from scipy.linalg import eigvals
 
-from options import n, ndim
-from auxiliary.functions import extend
+from example.gpr.systems.conserved import flux_cons_ref, Bdot_cons
+from example.gpr.systems.conserved import block_cons_ref, source_cons_ref
+from example.gpr.systems.eigenvalues import max_abs_eigs
+from options import nV
 
+
+def flux_ref(ret, Q, d):
+    """ ret is modified in-place, to consist of the flux F, in direction d,
+        given state Q
+    """
+    flux_cons_ref(ret, Q, d)
+
+def block_ref(ret, Q, d):
+    """ ret is modified in-place, to consist of the non-conservative matrix B,
+        in direction d, given state Q
+    """
+    block_cons_ref(ret, Q, d)
+
+def source_ref(ret, Q):
+    """ ret is modified in-place, to consist of the source term S,
+        given state Q
+    """
+    source_cons_ref(ret, Q)
 
 def flux(Q, d):
-    """ Returns the flux vector in the dth direction
+    """ returns the flux F, in direction d, given state Q
     """
-    return zeros(n)
+    ret = zeros(nV)
+    flux_ref(ret, Q, d)
+    return ret
 
 def block(Q, d):
-    """ Returns the nonconvervative matrix in the dth direction
+    """ returns the non-conservative matrix B, in direction d, given state Q
     """
-    return zeros([n, n])
+    ret = zeros([nV, nV])
+    block_ref(ret, Q, d)
+    return ret
 
 def source(Q):
-    """ Returns the source vector
+    """ returns the source term S, given state Q
     """
-    return zeros(n)
-
-def jacobian(Q, d):
-    """ Returns the Jacobian in the dth direction
-    """
-    return zeros([n, n])
-
-def max_abs_eigs(q, d):
-    """ Returns the largest of the absolute values of the eigenvalues of system matrix at q in
-        direction d
-    """
-    J = jacobian(q, d)
-    return max(abs(eigvals(J)))
-
-def boundary_condition(u):
-    """ Returns a copy of u with transmissive boundary conditions applied
-    """
-    ret = u.copy()
-    for d in range(ndim):
-        ret = extend(ret, 1, d)
+    ret = zeros(nV)
+    source_ref(ret, Q)
     return ret
+
+def Bdot(ret, x, Q, d):
+    """ ret is modified in-place, to consist of B.x,
+        where B is the non-conservative matrix in direct d, given state Q
+    """
+    Bdot_cons(ret, x, Q, d)
+
+def max_abs_eig(Q, d):
+    """ returns the largest absolute value of the eigenvalues of the system
+    """
+    return max_abs_eigs(Q,d)
+
+def system(Q, d):
+    """ returns the system matrix M (where dQ/dt + M.dQ/dx = S)
+    """
+    raise Exception("System Jacobian not implemented in this example.\n"
+                    "NOTE: cannot use Osher-Solomon flux in this example.")

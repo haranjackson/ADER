@@ -9,7 +9,6 @@ The non-conservative terms and the sources may of course be 0.
 * Python 3
 * NumPy
 * SciPy
-* Numba (for just-in-time compilation of performance-critical bits of code, can be easily removed)
 * Joblib (for parallelisation if desired, can be easily removed)
 
 ### Background
@@ -26,13 +25,15 @@ The intercell fluxes and non-conservative jumps are calculated using either a Ru
 
 ### Usage
 
-The functions returning the flux terms, the non-conservative terms, and the source terms are specified in 'system.py', along with the Jacobian of the system if Hidalgo's initial guess is being used for the root of the DG system. The maximum of the absolute values of the eigenvalues should also be specified here if the Rusanov-type intercell flux is being used in the FV update, but this can be found using SciPy's eigvals function if not known analytically. The boundary conditions can also be specified in this file.
+The functions returning the flux terms, the non-conservative terms, and the source terms are specified in 'system.py' (along with the system Jacobian, if the Osher-Solomon flux is desired). The maximum of the absolute values of the eigenvalues should also be specified here (this can be found using SciPy's eigvals function applied to the system Jacobian if not known analytically).
 
 The solver parameters and options are specified in 'options.py', including the order of the reconstruction, the size and shape of the grid, and the number of cores to parallelise over.
 
-The initial data and timestep are provided in 'data.py'.
+'main.py' contains an example implementation using the Godunov-Peshkov-Romenski model with an Ideal Gas equation of state. The test case consists of a 1D viscous shock travelling from left to right at Mach 2.
 
-'main.py' contains a short script to demonstrate the process over one timestep.
+### NOTE
+
+This implementation is pretty slow. It is intended to be used only for academic purposes. If you have a commercial application that requires a rapid, bullet-proof implementation of the ADER-WENO method or the GPR model, then get in touch (jackson.haran@gmail.com).
 
 ### References
 

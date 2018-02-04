@@ -6,6 +6,7 @@ def gram(A):
     """
     return dot(A.T, A)
 
+
 def kron_prod(matList):
     """ Returns the kronecker product of the matrices in matList
     """
@@ -14,7 +15,8 @@ def kron_prod(matList):
         ret = kron(ret, matList[i])
     return ret
 
+
 def dev(G):
     """ Returns the deviator of G
     """
-    return G - trace(G)/3 * eye(3)
+    return G - trace(G) / 3 * eye(3)

@@ -36,8 +36,8 @@ if __name__ == "__main__":
     u = main(u, tf, transmissive_BC, pool)
 
     plt.figure(1)
-    plt.plot(u[:,0,0,0])
+    plt.plot(u[:, 0, 0, 0])
     plt.title('density')
     plt.figure(2)
-    plt.plot(u[:,0,0,2]/u[:,0,0,0])
+    plt.plot(u[:, 0, 0, 2] / u[:, 0, 0, 0])
     plt.title('velocity')

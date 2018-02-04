@@ -13,13 +13,14 @@ def ader_stepper(pool, u, BC, dt):
     qh = dg_launcher(pool, wh, dt)
     u += fv_launcher(pool, qh, dt)
 
+
 def timestep(u, count, t, tf):
     """ Calculates dt, based on the maximum wavespeed across the domain
     """
     MAX = 0
-    for i,j,k in product(range(nx), range(ny), range(nz)):
+    for i, j, k in product(range(nx), range(ny), range(nz)):
 
-        Q = u[i,j,k]
+        Q = u[i, j, k]
         MAX = max(MAX, max_abs_eigs(Q, 0) / dx)
         if ndim > 1:
             MAX = max(MAX, max_abs_eigs(Q, 1) / dy)

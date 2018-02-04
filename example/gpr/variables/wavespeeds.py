@@ -8,6 +8,7 @@ def c_0(ρ, p):
     """
     return sqrt(γ * p / ρ)
 
+
 def c_h(ρ, T):
     """ Returns the velocity of the heat characteristic at equilibrium
     """

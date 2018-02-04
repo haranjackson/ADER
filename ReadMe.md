@@ -17,15 +17,13 @@ Given cell-wise constant initial data defined on a computational grid, this prog
 
 To the same order, a spatio-temporal polynomial reconstruction of the data is then obtained in each spacetime cell by the Discontinuous Galerkin method, using the WENO reconstruction as initial data at the start of the timestep (see [2,3]).
 
-The DG method involves finding the root of a nonlinear system. A slight modification of the initial guess proposed in [4] for systems with stiff source terms is implemented here. An option to use the WENO reconstruction as the initial guess is also available, as in [5].
-
 Finally, a finite volume update step is taken, using the DG reconstruction to calculate the values of the intercell fluxes and non-conservative intercell jump terms, and the interior source terms and non-conservative terms (see [3]).
 
-The intercell fluxes and non-conservative jumps are calculated using either a Rusanov-type flux [6] or an Osher-Solomon-type flux [7].
+The intercell fluxes and non-conservative jumps are calculated using either a Rusanov-type flux [4], a Roe-type flux [5], or an Osher-type flux [6].
 
 ### Usage
 
-The functions returning the flux terms, the non-conservative terms, and the source terms are specified in 'system.py' (along with the system Jacobian, if the Osher-Solomon flux is desired). The maximum of the absolute values of the eigenvalues should also be specified here (this can be found using SciPy's eigvals function applied to the system Jacobian if not known analytically).
+The functions returning the flux terms, the non-conservative terms, and the source terms need to be specified in 'system.py' (along with the system Jacobian, if the Roe flux or the Osher flux is desired). The maximum of the absolute values of the eigenvalues should also be specified here (this can be found using SciPy's eigvals function applied to the system Jacobian if not known analytically).
 
 The solver parameters and options are specified in 'options.py', including the order of the reconstruction, the size and shape of the grid, and the number of cores to parallelise over.
 
@@ -40,7 +38,6 @@ This implementation is pretty slow. It is intended to be used only for academic 
 1. Dumbser, Zanotti, Hidalgo, Balsara - *ADER-WENO finite volume schemes with space-time adaptive mesh refinement*
 2. Dumbser, Castro, Pares, Toro - *ADER schemes on unstructured meshes for nonconservative hyperbolic systems: Applications to geophysical flows*
 3. Dumbser, Hidalgo, Zanotti - *High order space-time adaptive ADER-WENO finite volume schemes for non-conservative hyperbolic systems*
-4. Hidalgo, Dumbser - *ADER schemes for nonlinear systems of stiff advection-diffusion-reaction equations*
-5. Dumbser, Hidalgo, Castro, Pares, Toro - *FORCE schemes on unstructured meshes II: Non-conservative hyperbolic systems*
-6. Toro - *Riemann Solvers and Numerical Methods for Fluid Dynamics: A Practical Introduction*
-7. Dumbser, Toro - *A simple extension of the Osher Riemann solver to non-conservative hyperbolic systems*
+4. Toro - *Riemann Solvers and Numerical Methods for Fluid Dynamics: A Practical Introduction*
+5. Dumbser, Toro - *On Universal Osher-Type Schemes for General NonlinearHyperbolic Conservation Laws*
+6. Dumbser, Toro - *A simple extension of the Osher Riemann solver to non-conservative hyperbolic systems*

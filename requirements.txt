@@ -1,0 +1,4 @@
+python>=3.2
+numpy>=1.13
+scipy>=1.0
+tangent>=0.1.9

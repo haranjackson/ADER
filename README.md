@@ -2,7 +2,7 @@
 
 A Python implementation of the ADER method for solving any (potentially very stiff) hyperbolic system of PDEs of the following form:
 
-![Figure 1](/images/PDEsystem.png)
+![Figure 1](http://quicklatex.com/cache3/d6/ql_47fb6a15d79d64bde7b461d1ff5346d6_l3.png)
 
 An arbitrary number of spatial domains can be used, and this implementation is capable of solving the equations to any order of accuracy. Second-order parabolic PDEs will be implemented soon.
 

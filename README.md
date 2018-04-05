@@ -6,7 +6,11 @@ A Python implementation of the ADER method for solving any (potentially very sti
 
 An arbitrary number of spatial domains can be used, and this implementation is capable of solving the equations to any order of accuracy. Second-order parabolic PDEs will be implemented soon.
 
-## Requirements
+## Installation
+
+Run `pip install ader`
+
+The following dependencies are required:
 
 * Python 3.6+
 * NumPy 1.14+

@@ -17,21 +17,19 @@ def endpoints(qh, NDIM, ENDVALS):
 
 class FVSolver():
 
-    def __init__(self, N, NV, NDIM, flux, source=None,
-                 nonconservative_matrix=None, system_matrix=None, max_eig=None,
-                 model_params=None, riemann_solver='rusanov', time_rec=True):
+    def __init__(self, N, NV, NDIM, F, S=None, B=None, M=None, max_eig=None,
+                 pars=None, riemann_solver='rusanov', time_rec=True):
 
         self.N = N
         self.NV = NV
         self.NDIM = NDIM
-        self.basis = Basis(N)
 
-        self.flux = flux
-        self.source = source
-        self.nonconservative_matrix = nonconservative_matrix
-        self.system_matrix = system_matrix
+        self.F = F
+        self.S = S
+        self.B = B
+        self.M = M
         self.max_eig = max_eig
-        self.model_params = model_params
+        self.pars = pars
 
         if riemann_solver == 'rusanov':
             self.D_FUN = D_RUS
@@ -40,12 +38,17 @@ class FVSolver():
         elif riemann_solver == 'osher':
             self.D_FUN = D_OSH
         else:
-            raise ValueError("Choice of 'riemann_solver' choice not recognised.\n" +
+            raise ValueError("Choice of 'riemann_solver' not recognised.\n" +
                              "Choose from 'rusanov', 'roe', and 'osher'.")
 
         self.time_rec = time_rec
-        self.TN, self.WGHT, self.WGHT_END = quad_weights(N, NDIM,
-                                                         self.basis.WGHTS,
+
+        basis = Basis(N)
+        self.NODES = basis.NODES
+        self.WGHTS = basis.WGHTS
+        self.ENDVALS = basis.ENDVALS
+        self.DERVALS = basis.DERVALS
+        self.TN, self.WGHT, self.WGHT_END = quad_weights(N, NDIM, basis.WGHTS,
                                                          time_rec)
 
     def interfaces(self, ret, qEnd, dX):
@@ -57,7 +60,7 @@ class FVSolver():
 
         for d in range(self.NDIM):
 
-            # dimensions of cells traversed when calculating fluxes in direction d
+            # dimensions of cells used when calculating fluxes in direction d
             coordList = [range(1, dim + 1) for dim in dims[:d]] + \
                         [range(1, dims[d] + 2)] + \
                         [range(1, dim + 1) for dim in dims[d + 1:]]
@@ -78,12 +81,12 @@ class FVSolver():
                     qL_ = qL[ind]
                     qR_ = qR[ind]
 
-                    fL = self.flux(qL_, d, self.model_params)
-                    fR = self.flux(qR_, d, self.model_params)
+                    fL = self.F(qL_, d, self.pars)
+                    fR = self.F(qR_, d, self.pars)
                     fInt += self.WGHT_END[ind] * \
                         (fL + fR - self.D_FUN(self, qL_, qR_, d))
 
-                    if self.nonconservative_matrix is not None:
+                    if self.B is not None:
                         BInt += self.WGHT_END[ind] * B_INT(self, qL_, qR_, d)
 
                 rcoords_ = tuple(c - 1 for c in rcoords[2:])
@@ -108,19 +111,19 @@ class FVSolver():
                 q = qhi[inds]
                 tmp = zeros(self.NV)
 
-                if self.source is not None:
-                    tmp = self.source(q, self.model_params)
+                if self.S is not None:
+                    tmp = self.S(q, self.pars)
 
-                if self.nonconservative_matrix is not None:
+                if self.B is not None:
 
                     qt = qhi[inds[0]]
 
                     for d in range(self.NDIM):
 
                         dqdx = derivative(self.N, self.NV, self.NDIM, qt,
-                                          inds[1:], d, self.basis.DERVALS)
+                                          inds[1:], d, self.DERVALS)
 
-                        B = self.nonconservative_matrix(q, d, self.model_params)
+                        B = self.B(q, d, self.pars)
                         Bdqdx = dot(B, dqdx)
 
                         tmp -= Bdqdx / dX[d]
@@ -134,11 +137,11 @@ class FVSolver():
         if not self.time_rec:
             qh = qh.reshape(qh.shape[:self.NDIM] + (1,) + qh.shape[self.NDIM:])
 
-        qEnd = endpoints(qh, self.NDIM, self.basis.ENDVALS)
+        qEnd = endpoints(qh, self.NDIM, self.ENDVALS)
 
         ret = zeros([s - 2 for s in qh.shape[:self.NDIM]] + [self.NV])
 
-        if self.source is not None or self.nonconservative_matrix is not None:
+        if self.S is not None or self.B is not None:
             self.centers(ret, qh, dX)
 
         self.interfaces(ret, qEnd, dX)

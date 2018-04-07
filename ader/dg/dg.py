@@ -21,37 +21,37 @@ def unconverged(q, qNew, TOL):
 
 class DGSolver():
 
-    def __init__(self, N, NV, NDIM, flux, source=None,
-                 nonconservative_matrix=None, system_matrix=None,
-                 model_params=None,
-                 stiff=False, stiff_ig=False, nk_ig=False,
-                 tol=1e-6, max_iter=50, max_size=1e16):
+    def __init__(self, N, NV, NDIM, F, S=None, B=None, M=None, pars=None,
+                 stiff=False, stiff_guess=False, newton_guess=False, tol=1e-6,
+                 max_iter=50, max_size=1e16):
 
         self.N = N
         self.NV = NV
         self.NDIM = NDIM
         self.NT = N**(NDIM + 1)
-        self.basis = Basis(N)
 
-        self.flux = flux
-        self.source = source
-        self.nonconservative_matrix = nonconservative_matrix
-        self.system_matrix = system_matrix
-        self.model_params = model_params
+        self.F = F
+        self.S = S
+        self.B = B
+        self.M = M
+        self.pars = pars
 
         self.max_iter = max_iter
         self.tol = tol
         self.max_size = max_size
 
         self.stiff = stiff
-        if stiff_ig:
+        if stiff_guess:
             self.initial_guess = stiff_initial_guess
         else:
             self.initial_guess = standard_initial_guess
-        self.nk_ig = nk_ig
+        self.newton_guess = newton_guess
 
+        basis = Basis(N)
+        self.GAPS = basis.GAPS
+        self.DERVALS = basis.DERVALS
         self.DG_W, self.DG_V, self.DG_U, self.DG_M, self.DG_D = galerkin_matrices(
-                N, NV, NDIM, self.basis)
+                N, NV, NDIM, basis)
 
     def rhs(self, q, Ww, dt, dX):
         """ Returns the right-handside of the system governing coefficients of qh
@@ -68,17 +68,17 @@ class DGSolver():
         for i in range(self.NT):
             qi = q[i]
 
-            if self.source is not None:
-                ret[i] = self.source(qi, self.model_params)
+            if self.S is not None:
+                ret[i] = self.S(qi, self.pars)
 
             for d in range(self.NDIM):
-                Fq[d, i] = self.flux(qi, d, self.model_params)
+                Fq[d, i] = self.F(qi, d, self.pars)
 
-                if self.nonconservative_matrix is not None:
-                    B = self.nonconservative_matrix(qi, d, self.model_params)
+                if self.B is not None:
+                    B = self.B(qi, d, self.pars)
                     Bq[d, i] = dot(B, Dq[d, i])
 
-        if self.nonconservative_matrix is not None:
+        if self.B is not None:
             for d in range(self.NDIM):
                 ret -= Bq[d] / dX[d]
 

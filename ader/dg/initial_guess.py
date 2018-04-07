@@ -22,7 +22,7 @@ def stiff_initial_guess(obj, w, dt, dX):
 
     for t in range(obj.N):
 
-        dt_ = dt * obj.basis.GAPS[t]
+        dt_ = dt * obj.GAPS[t]
 
         # loop over the indices of each spatial node
         for inds in product(*indList):
@@ -31,17 +31,19 @@ def stiff_initial_guess(obj, w, dt, dX):
 
             Mdqdx = zeros(obj.NV)
             for d in range(obj.NDIM):
+
                 dqdx = derivative(obj.N, obj.NV, obj.NDIM, qt, inds, d,
-                                  obj.basis.DERVALS)
-                Mdqdx += dot(obj.system_matrix(q_, d, obj.model_params), dqdx) / dX[d]
+                                  obj.DERVALS)
 
-            S0 = obj.source(q_, obj.model_params)
+                Mdqdx += dot(obj.M(q_, d, obj.pars), dqdx) / dX[d]
 
-            if obj.nk_ig:
+            S0 = obj.S(q_, obj.pars)
+
+            if obj.newton_guess:
 
                 def f(X):
 
-                    S = (S0 + obj.source(X, obj.model_params)) / 2
+                    S = (S0 + obj.S(X, obj.pars)) / 2
                     return X - q_ + dt_ * (Mdqdx - S)
 
                 q[(t,) + inds] = newton_krylov(f, q_, f_tol=obj.tol)

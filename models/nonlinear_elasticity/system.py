@@ -4,7 +4,7 @@ from numpy.linalg import det
 from models.nonlinear_elasticity.state import entropy, sigma
 
 
-def flux_nonlinear_elasticity(Q, d, MP):
+def F_nonlinear_elasticity(Q, d, MP):
 
     ret = zeros(13)
 
@@ -37,7 +37,7 @@ def flux_nonlinear_elasticity(Q, d, MP):
     return ret
 
 
-def nonconservative_matrix_nonlinear_elasticity(Q, d, MP):
+def B_nonlinear_elasticity(Q, d, MP):
 
     ret = zeros([13, 13])
 

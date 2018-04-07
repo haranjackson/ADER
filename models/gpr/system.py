@@ -6,7 +6,7 @@ from models.gpr.systems.jacobians import dFdP, dPdQ
 from models.gpr.misc.structures import State
 
 
-def flux_gpr(Q, d, MP):
+def F_gpr(Q, d, MP):
 
     ret = zeros(17)
 
@@ -52,7 +52,7 @@ def flux_gpr(Q, d, MP):
     return ret
 
 
-def source_gpr(Q, MP):
+def S_gpr(Q, MP):
 
     ret = zeros(17)
 
@@ -72,7 +72,7 @@ def source_gpr(Q, MP):
     return ret
 
 
-def nonconservative_matrix_gpr(Q, d, MP):
+def B_gpr(Q, d, MP):
 
     ret = zeros([17, 17])
     P = State(Q, MP)
@@ -89,13 +89,13 @@ def nonconservative_matrix_gpr(Q, d, MP):
     return ret
 
 
-def system_matrix_gpr(Q, d, MP):
+def M_gpr(Q, d, MP):
     """ Returns the Jacobian in the dth direction
     """
     P = State(Q, MP)
     DFDP = dFdP(P, d)
     DPDQ = dPdQ(P)
-    B = nonconservative_matrix_cons(Q, d, MP)
+    B = B_gpr(Q, d, MP)
     return dot(DFDP, DPDQ) + B
 
 

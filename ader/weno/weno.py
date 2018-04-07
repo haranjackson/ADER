@@ -44,24 +44,24 @@ class WENOSolver():
         self.N = N
         self.NV = NV
         self.NDIM = NDIM
-        self.basis = Basis(N)
 
-        self.LAMS = [λs, λs, λc, λc]
+        self.Λ = [λs, λs, λc, λc]
         self.fN = int(floor((N - 1) / 2))
         self.cN = int(ceil((N - 1) / 2))
         self.r = r
         self.ε = ε
 
-        self.M = weno_matrices(N, self.basis.ψ)
-        self.Σ = oscillation_indicator(N, self.basis.dψ)
+        basis = Basis(N)
+        self.W = weno_matrices(N, basis.ψ)
+        self.Σ = oscillation_indicator(N, basis.dψ)
 
     def calculate_coeffs(self, uList):
         """ Calculate coefficients of basis polynomials and weights
         """
         n = len(uList)
-        wList = [solve(self.M[i], uList[i], overwrite_b=1) for i in range(n)]
+        wList = [solve(self.W[i], uList[i], overwrite_b=1) for i in range(n)]
         σList = [((w.T).dot(self.Σ).dot(w)).diagonal() for w in wList]
-        oList = [self.LAMS[i] / (abs(σList[i]) + self.ε)**self.r for i in range(n)]
+        oList = [self.Λ[i] / (abs(σList[i]) + self.ε)**self.r for i in range(n)]
 
         oSum = zeros(self.NV)
         numerator = zeros([self.N, self.NV])

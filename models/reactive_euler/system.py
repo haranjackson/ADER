@@ -23,7 +23,7 @@ def energy(ρ, p, v, λ, γ, Qc):
     return p / ((γ - 1) * ρ) + sqnorm(v) / 2 + Qc * (λ - 1)
 
 
-def flux_reactive_euler(Q, d, model_params):
+def F_reactive_euler(Q, d, model_params):
 
     γ = model_params['γ']
     Qc = model_params['Qc']
@@ -50,7 +50,7 @@ def reaction_rate(ρ, E, v, λ, Qc, cv, Ti, K0):
     return K0 if T > Ti else 0
 
 
-def source_reactive_euler(Q, model_params):
+def S_reactive_euler(Q, model_params):
 
     ret = zeros(6)
 

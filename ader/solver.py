@@ -2,10 +2,9 @@ from itertools import product
 from time import time
 from concurrent.futures import ProcessPoolExecutor
 
-from numpy import abs, array, amax, concatenate, zeros
-from numpy.linalg import eigvals
-from tangent import autodiff
+from numpy import array, concatenate
 
+from ader.etc.autodiff import make_M, make_max_eig
 from ader.etc.boundaries import standard_BC, periodic_BC
 from ader.dg.dg import DGSolver
 from ader.fv.fv import FVSolver
@@ -21,35 +20,6 @@ def get_blocks(arr, N, ncore):
     inds = array([i * step for i in range(ncore)] + [n - N])
     inds[0] += N
     return [arr[inds[i] - N: inds[i + 1] + N] for i in range(len(inds) - 1)]
-
-
-def make_M(F, B, NV):
-    """ Returns a function that calculates the system Jacobian, given the flux
-        function, and the non-conservative matrix (if necessary)
-    """
-    dFdQ = autodiff(F)
-
-    def M(Q, d, pars=None):
-        """ Returns the system Jacobian in direction d, given state Q
-        """
-        ret = zeros([NV, NV])
-        for i in range(NV):
-            x = zeros(NV)
-            x[i] = 1
-            ret[i] = dFdQ(Q, d, pars, x)
-        if B is not None:
-            ret += B(Q, d, pars)
-        return ret
-
-    return M
-
-
-def make_max_eig(M):
-
-    def max_eig(Q, d, pars=None):
-        return amax(abs(eigvals(M(Q, d, pars))))
-
-    return max_eig
 
 
 class Solver():
@@ -221,37 +191,34 @@ class Solver():
 
         self.ncore = ncore
 
-    def timestep(self, u, dX, count=None, t=None, final_time=None):
+    def timestep(self):
         """ Calculates dt, based on the maximum wavespeed across the domain
         """
         MAX = 0
-        for coords in product(*[range(s) for s in u.shape[:self.NDIM]]):
+        for coords in product(*[range(s) for s in self.u.shape[:self.NDIM]]):
 
-            Q = u[coords]
+            Q = self.u[coords]
             for d in range(self.NDIM):
-                MAX = max(MAX, self.max_eig(Q, d, self.pars) / dX[d])
+                MAX = max(MAX, self.max_eig(Q, d, self.pars) / self.dX[d])
 
         dt = self.cfl / MAX
 
         # Reduce early time steps to avoid initialization errors
-        if count is not None and count <= 5:
-            dt *= 0.2
+        if self.count <= 5:
+            dt /= 5
 
-        if final_time is not None:
-            return min(final_time - t, dt)
-        else:
-            return dt
+        return min(self.final_time - self.t, dt)
 
-    def stepper(self, uBC, dt, dX, verbose=False):
+    def ader_stepper(self, uBC, dt, verbose):
         t0 = time()
 
         wh = self.wenoSolver.solve(uBC)
         t1 = time()
 
-        qh = self.dgSolver.solve(wh, dt, dX)
+        qh = self.dgSolver.solve(wh, dt, self.dX)
         t2 = time()
 
-        du = self.fvSolver.solve(qh, dt, dX)
+        du = self.fvSolver.solve(qh, dt, self.dX)
         t3 = time()
 
         if verbose:
@@ -262,40 +229,42 @@ class Solver():
 
         return du
 
-    def parallel_stepper(self, executor, uBC, dt, dX, verbose=False):
+    def parallel_ader_stepper(self, executor, uBC, dt):
         t0 = time()
 
         blocks = get_blocks(uBC, self.N, self.ncore)
         n = len(blocks)
-        chunks = executor.map(self.stepper, blocks, [dt] * n, [dX] * n)
+        chunks = executor.map(self.ader_stepper, blocks, [dt] * n, [False]*n)
         du = concatenate([c for c in chunks])
 
-        if verbose:
+        if self.verbose:
             print('Iteration Time: {:.3f}s\n'.format(time() - t0))
 
         return du
 
-    def resume(self, verbose=False):
+    def stepper(self, executor, dt):
+
+        uBC = self.BC(self.u, self.N, self.NDIM)
+
+        if self.ncore == 1:
+            self.u += self.ader_stepper(uBC, dt, self.verbose)
+        else:
+            self.u += self.parallel_ader_stepper(executor, uBC, dt)
+
+    def resume(self):
 
         with ProcessPoolExecutor(max_workers=self.ncore) as executor:
 
             while self.t < self.final_time:
 
-                dt = self.timestep(self.u, self.dX, count=self.count, t=self.t,
-                                   final_time=self.final_time)
+                dt = self.timestep()
 
-                if verbose:
+                if self.verbose:
                     print('Iteration:', self.count)
                     print('t  = {:.3e}'.format(self.t))
                     print('dt = {:.3e}'.format(dt))
 
-                uBC = self.BC(self.u, self.N, self.NDIM)
-
-                if self.ncore == 1:
-                    self.u += self.stepper(uBC, dt, self.dX, verbose)
-                else:
-                    self.u += self.parallel_stepper(executor, uBC, dt, self.dX,
-                                                    verbose)
+                self.stepper(executor, dt)
 
                 self.t += dt
                 self.count += 1
@@ -346,6 +315,7 @@ class Solver():
         self.final_time = final_time
         self.dX = dX
         self.cfl = cfl
+        self.verbose = verbose
         self.callback = callback
 
         if boundary_conditions == 'transitive':
@@ -361,4 +331,4 @@ class Solver():
         self.t = 0
         self.count = 0
 
-        return self.resume(verbose)
+        return self.resume()

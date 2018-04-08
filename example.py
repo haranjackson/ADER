@@ -16,7 +16,8 @@ def gpr_test():
 
     # Set up the solver
     S = Solver(nvar=17, ndim=1, F=F_gpr, B=B_gpr, S=S_gpr,
-               model_params=model_params, M=M_gpr, max_eig=max_eig_gpr)
+               model_params=model_params, M=M_gpr, max_eig=max_eig_gpr,
+               ncore=4)
 
     # Solve for the data given
     sol = S.solve(initial_grid, final_time, dX, cfl=0.9, verbose=True)
@@ -40,7 +41,7 @@ def reactive_euler_test():
     from models.reactive_euler.system import S_reactive_euler
     from models.reactive_euler.tests import shock_induced_detonation_IC
 
-    grids = []
+    grids = []  # will store the grid at every timestep, for plotting later
 
     def callback(u, t, count):
         grids.append(u.copy())
@@ -53,11 +54,10 @@ def reactive_euler_test():
     sol = S.solve(initial_grid, final_time, dX, cfl=0.6, verbose=True,
                   callback=callback)
 
-    n = len(grids)
-    k = 6
-    for i in range(1, k+1):
-        plt.plot(np.linspace(0, 1, len(initial_grid)),
-                 grids[int(i*(n-1)/k)][:, 0])
+    # plot density at 6 different evenly-spaced times
+    x = np.linspace(0, 1, len(initial_grid))
+    for i in np.linspace(0, len(grids) - 1, 6, dtype=int):
+        plt.plot(x, grids[i][:, 0])
     plt.title("Reactive Euler: Shock-Induced Detonation")
     plt.xlabel('x')
     plt.ylabel('density')
@@ -67,5 +67,5 @@ def reactive_euler_test():
 
 if __name__ == "__main__":
     print("Uncomment the test you would like to see")
-    sol_gpr = gpr_test()
-#    sol_reactive_euler = reactive_euler_test()
+    # sol_gpr = gpr_test()
+    # sol_reactive_euler = reactive_euler_test()

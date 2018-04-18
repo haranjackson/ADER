@@ -96,7 +96,7 @@ class DGSolver():
         def f(x): return dot(self.DG_U, x) - self.rhs(x, Ww, dt, dX)
         return newton_krylov(f, q, f_tol=self.tol, method='bicgstab')
 
-    def solve(self, wh, dt, dX):
+    def solve(self, wh, dt, dX, mask=None):
         """ Returns the Galerkin predictor, given the WENO reconstruction at tn
         """
         shape = wh.shape
@@ -104,33 +104,38 @@ class DGSolver():
         wh = wh.reshape(n, self.N**self.NDIM, self.NV)
         qh = zeros([n, self.NT, self.NV])
 
+        if mask is not None:
+            mask = mask.reshape(n)
+
         for i in range(n):
 
-            w = wh[i]
-            Ww = dot(self.DG_W, w)
+            if mask is None or mask[i]:
 
-            if self.stiff:
-                qh[i] = self.root_find(w, Ww, dt, dX)
+                w = wh[i]
+                Ww = dot(self.DG_W, w)
 
-            else:
-                q = self.initial_guess(self, w, dt, dX)
-
-                for count in range(self.max_iter):
-
-                    qNew = solve(self.DG_U, self.rhs(q, Ww, dt, dX))
-
-                    if blowup(qNew, self.max_size):
-                        qh[i] = self.root_find(w, Ww, dt, dX)
-                        break
-
-                    elif unconverged(q, qNew, self.tol):
-                        q = qNew
-                        continue
-
-                    else:
-                        qh[i] = qNew
-                        break
-                else:
+                if self.stiff:
                     qh[i] = self.root_find(w, Ww, dt, dX)
+
+                else:
+                    q = self.initial_guess(self, w, dt, dX)
+
+                    for count in range(self.max_iter):
+
+                        qNew = solve(self.DG_U, self.rhs(q, Ww, dt, dX))
+
+                        if blowup(qNew, self.max_size):
+                            qh[i] = self.root_find(w, Ww, dt, dX)
+                            break
+
+                        elif unconverged(q, qNew, self.tol):
+                            q = qNew
+                            continue
+
+                        else:
+                            qh[i] = qNew
+                            break
+                    else:
+                        qh[i] = self.root_find(w, Ww, dt, dX)
 
         return qh.reshape(shape[:self.NDIM] + (self.N,) * (self.NDIM + 1) + (self.NV,))

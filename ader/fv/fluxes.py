@@ -32,7 +32,10 @@ def D_OSH(obj, qL, qR, d):
             b = solve(R, Δq, check_finite=False)
             ret += obj.WGHTS[i] * dot(R, abs(λ) * b)
 
-    return ret.real
+    fL = obj.F(qL, d, obj.pars)
+    fR = obj.F(qR, d, obj.pars)
+
+    return fL + fR - ret.real
 
 
 def D_ROE(obj, qL, qR, d):
@@ -50,7 +53,10 @@ def D_ROE(obj, qL, qR, d):
         simplefilter("ignore")
         b = solve(R, Δq, overwrite_b = True, check_finite=False)
 
-    return dot(R, abs(λ) * b).real
+    fL = obj.F(qL, d, obj.pars)
+    fR = obj.F(qR, d, obj.pars)
+
+    return fL + fR - dot(R, abs(λ) * b).real
 
 
 def D_RUS(obj, qL, qR, d):
@@ -58,4 +64,8 @@ def D_RUS(obj, qL, qR, d):
     """
     max1 = obj.max_eig(qL, d, obj.pars)
     max2 = obj.max_eig(qR, d, obj.pars)
-    return max(max1, max2) * (qR - qL)
+
+    fL = obj.F(qL, d, obj.pars)
+    fR = obj.F(qR, d, obj.pars)
+
+    return fL + fR - max(max1, max2) * (qR - qL)

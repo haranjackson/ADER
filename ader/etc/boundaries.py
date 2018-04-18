@@ -1,4 +1,6 @@
-from numpy import arange, concatenate, flip, int64, ones, prod, zeros
+from itertools import product
+
+from numpy import arange, array, concatenate, flip, int64, ones, prod, zeros
 
 
 def extend_grid(arr, ext, d, kind):
@@ -54,4 +56,38 @@ def periodic_BC(u, N, NDIM):
     ret = u.copy()
     for d in range(NDIM):
         ret = extend_grid(ret, N, d, 2)
+    return ret
+
+
+def neighbor_cells(arr, coords):
+    """ Returns the neighbors of the cell in arr given by coords
+    """
+    ndim = arr.ndim
+    shape = arr.shape
+    return [arr[coords[:d] + (coords[d] + 1,) + coords[d + 1:]]
+            for d in range(ndim) if coords[d] + 1 < shape[d]] + \
+           [arr[coords[:d] + (coords[d] - 1,) + coords[d + 1:]]
+            for d in range(ndim) if coords[d] > 0]
+
+
+def extend_mask(mask):
+    """ Given a mask corresponding to the cells that the user wishes to update,
+        this function returns a mask of the cells for which the DG predictor
+        must be calculated (i.e. the masked cells and their neighbors)
+    """
+    mask = array(mask, dtype=int)
+
+    for coords in product(*[range(s) for s in mask.shape]):
+
+        if mask[coords] == 0:
+
+            neighbors = neighbor_cells(mask, coords)
+
+            if 1 in neighbors:
+                mask[coords] = 2
+
+    ret = array(mask, dtype=bool)
+    for d in range(mask.ndim):
+        ret = extend_grid(ret, 1, d, 0)
+
     return ret

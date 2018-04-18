@@ -2,10 +2,11 @@ from itertools import product
 from time import time
 from concurrent.futures import ProcessPoolExecutor
 
-from numpy import array, concatenate
+from numpy import array, concatenate, expand_dims
 
 from ader.etc.autodiff import make_M, make_max_eig
-from ader.etc.boundaries import standard_BC, periodic_BC
+from ader.etc.boundaries import standard_BC, periodic_BC, extend_mask, \
+    extend_grid
 from ader.dg.dg import DGSolver
 from ader.fv.fv import FVSolver
 from ader.weno.weno import WENOSolver
@@ -191,15 +192,16 @@ class Solver():
 
         self.ncore = ncore
 
-    def timestep(self):
+    def timestep(self, mask=None):
         """ Calculates dt, based on the maximum wavespeed across the domain
         """
         MAX = 0
         for coords in product(*[range(s) for s in self.u.shape[:self.NDIM]]):
 
-            Q = self.u[coords]
-            for d in range(self.NDIM):
-                MAX = max(MAX, self.max_eig(Q, d, self.pars) / self.dX[d])
+            if mask is None or mask[coords]:
+                Q = self.u[coords]
+                for d in range(self.NDIM):
+                    MAX = max(MAX, self.max_eig(Q, d, self.pars) / self.dX[d])
 
         dt = self.cfl / MAX
 
@@ -209,16 +211,18 @@ class Solver():
 
         return min(self.final_time - self.t, dt)
 
-    def ader_stepper(self, uBC, dt, verbose):
+    def ader_stepper(self, uBC, dt, verbose, maskBC):
+        """ Calculates the change in the grid over time step dt.
+        """
         t0 = time()
 
         wh = self.wenoSolver.solve(uBC)
         t1 = time()
 
-        qh = self.dgSolver.solve(wh, dt, self.dX)
+        qh = self.dgSolver.solve(wh, dt, self.dX, maskBC)
         t2 = time()
 
-        du = self.fvSolver.solve(qh, dt, self.dX)
+        du = self.fvSolver.solve(qh, dt, self.dX, maskBC)
         t3 = time()
 
         if verbose:
@@ -229,12 +233,24 @@ class Solver():
 
         return du
 
-    def parallel_ader_stepper(self, executor, uBC, dt):
+    def parallel_ader_stepper(self, executor, uBC, dt, maskBC):
+        """ Splits uBC into equally-spaced chunks in the x-axis, and applies
+            the ADER stepper to each.
+        """
         t0 = time()
 
         blocks = get_blocks(uBC, self.N, self.ncore)
         n = len(blocks)
-        chunks = executor.map(self.ader_stepper, blocks, [dt] * n, [False]*n)
+
+        if maskBC is None:
+            maskBlocks = [None] * n
+        else:
+            maskBC_ = extend_grid(maskBC, self.N - 1, 0, 0)
+            maskBlocks = [mb[self.N - 1 : -(self.N - 1)]
+                          for mb in get_blocks(maskBC_, self.N, self.ncore)]
+
+        chunks = executor.map(self.ader_stepper, blocks, [dt] * n, [False] * n,
+                              maskBlocks)
         du = concatenate([c for c in chunks])
 
         if self.verbose:
@@ -242,14 +258,26 @@ class Solver():
 
         return du
 
-    def stepper(self, executor, dt):
-
+    def stepper(self, executor, dt, mask=None):
+        """ Steps the grid forward in time by dt. If mask is not None, then
+            only the cells (i,j,...) where mask(i,j,...)=True are updated.
+        """
         uBC = self.BC(self.u, self.N, self.NDIM)
 
-        if self.ncore == 1:
-            self.u += self.ader_stepper(uBC, dt, self.verbose)
+        if mask is None:
+            maskBC = None
         else:
-            self.u += self.parallel_ader_stepper(executor, uBC, dt)
+            maskBC = extend_mask(mask)
+
+        if self.ncore == 1:
+            du = self.ader_stepper(uBC, dt, self.verbose, maskBC)
+        else:
+            du = self.parallel_ader_stepper(executor, uBC, dt, maskBC)
+
+        if mask is None:
+            self.u += du
+        else:
+            self.u += du * expand_dims(mask, -1)
 
     def resume(self):
 

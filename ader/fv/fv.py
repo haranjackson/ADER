@@ -8,8 +8,8 @@ from ader.fv.matrices import quad_weights
 
 
 def endpoints(qh, NDIM, ENDVALS):
-    """ Returns tensor T where T[d,e,i1,...,in] is the set of DG coefficients in
-        the dth direction, at end e (either 0 or 1), in cell (i1,...,in)
+    """ Returns tensor T where T[d,e,i1,...,in] is the set of DG coefficients
+        in the dth direction, at end e (either 0 or 1), in cell (i1,...,in)
     """
     return array([tensordot(ENDVALS, qh, (0, NDIM + 1 + d))
                   for d in range(NDIM)])
@@ -51,9 +51,9 @@ class FVSolver():
         self.TN, self.WGHT, self.WGHT_END = quad_weights(N, NDIM, basis.WGHTS,
                                                          time_rec)
 
-    def interfaces(self, ret, qEnd, dX):
-        """ Returns the contribution to the finite volume update coming from the
-            fluxes at the interfaces
+    def interfaces(self, ret, qEnd, dX, mask):
+        """ Returns the contribution to the finite volume update coming from
+            the fluxes at the interfaces
         """
         dims = ret.shape[:self.NDIM]
         nweights = len(self.WGHT_END)
@@ -65,72 +65,78 @@ class FVSolver():
                         [range(1, dims[d] + 2)] + \
                         [range(1, dim + 1) for dim in dims[d + 1:]]
 
-            for coords in product(*coordList):
+            for rcoords in product(*coordList):
 
-                # qL,qR are the sets of polynomial coefficients for the DG
-                # reconstruction at the left and right sides of the interface
-                lcoords = (d, 1) + coords[:d] + (coords[d] - 1,) + coords[d + 1:]
-                rcoords = (d, 0) + coords
-                qL = qEnd[lcoords].reshape(nweights, self.NV)
-                qR = qEnd[rcoords].reshape(nweights, self.NV)
+                lcoords = rcoords[:d] + (rcoords[d] - 1,) + rcoords[d + 1:]
 
-                # integrate the flux over the surface normal to direction d
-                fInt = zeros(self.NV)    # flux from conservative terms
-                BInt = zeros(self.NV)    # flux from non-conservative terms
-                for ind in range(nweights):
-                    qL_ = qL[ind]
-                    qR_ = qR[ind]
+                if mask is None or (mask[lcoords] and mask[rcoords]):
 
-                    fL = self.F(qL_, d, self.pars)
-                    fR = self.F(qR_, d, self.pars)
-                    fInt += self.WGHT_END[ind] * \
-                        (fL + fR - self.D_FUN(self, qL_, qR_, d))
+                    # qL,qR are the sets of polynomial coefficients for the DG
+                    # reconstruction at the left & right sides of the interface
+                    qL = qEnd[(d, 1) + lcoords].reshape(nweights, self.NV)
+                    qR = qEnd[(d, 0) + rcoords].reshape(nweights, self.NV)
 
-                    if self.B is not None:
-                        BInt += self.WGHT_END[ind] * B_INT(self, qL_, qR_, d)
+                    # integrate the flux over the surface normal to direction d
+                    fInt = zeros(self.NV)    # flux from conservative terms
+                    BInt = zeros(self.NV)    # flux from non-conservative terms
+                    for ind in range(nweights):
+                        qL_ = qL[ind]
+                        qR_ = qR[ind]
 
-                rcoords_ = tuple(c - 1 for c in rcoords[2:])
-                lcoords_ = rcoords_[:d] + (rcoords_[d] - 1,) + rcoords_[d + 1:]
+                        fInt += self.WGHT_END[ind] * self.D_FUN(self,
+                                                                qL_, qR_, d)
 
-                if lcoords_[d] >= 0:
-                    ret[lcoords_] -= (fInt + BInt) / dX[d]
+                        if self.B is not None:
+                            BInt += self.WGHT_END[ind] * B_INT(self,
+                                                               qL_, qR_, d)
 
-                if rcoords_[d] < dims[d]:
-                    ret[rcoords_] += (fInt - BInt) / dX[d]
+                    rcoords_ = tuple(c - 1 for c in rcoords)
+                    lcoords_ = rcoords_[:d] + (rcoords_[d] - 1,) + rcoords_[d + 1:]
 
-    def centers(self, ret, qh, dX):
-        """ Returns the space-time averaged source term and non-conservative terms
+                    if lcoords_[d] >= 0:
+                        ret[lcoords_] -= (fInt + BInt) / dX[d]
+
+                    if rcoords_[d] < dims[d]:
+                        ret[rcoords_] += (fInt - BInt) / dX[d]
+
+    def centers(self, ret, qh, dX, mask):
+        """ Returns the space-time averaged source term and non-conservative
+            terms
         """
         for coords in product(*[range(dim) for dim in ret.shape[:self.NDIM]]):
 
-            qhi = qh[tuple(coord + 1 for coord in coords)]
+            coords_ = tuple(coord + 1 for coord in coords)
 
-            # Integrate across volume of spacetime cell
-            for inds in product(*[range(s) for s in self.WGHT.shape]):
+            if mask is None or mask[coords_]:
 
-                q = qhi[inds]
-                tmp = zeros(self.NV)
+                qhi = qh[coords_]
 
-                if self.S is not None:
-                    tmp = self.S(q, self.pars)
+                # Integrate across volume of spacetime cell
+                for inds in product(*[range(s) for s in self.WGHT.shape]):
 
-                if self.B is not None:
+                    q = qhi[inds]
+                    tmp = zeros(self.NV)
 
-                    qt = qhi[inds[0]]
+                    if self.S is not None:
+                        tmp = self.S(q, self.pars)
 
-                    for d in range(self.NDIM):
+                    if self.B is not None:
 
-                        dqdx = derivative(self.N, self.NV, self.NDIM, qt,
-                                          inds[1:], d, self.DERVALS)
+                        qt = qhi[inds[0]]
 
-                        B = self.B(q, d, self.pars)
-                        Bdqdx = dot(B, dqdx)
+                        for d in range(self.NDIM):
 
-                        tmp -= Bdqdx / dX[d]
+                            dqdx = derivative(self.N, self.NV, self.NDIM, qt,
+                                              inds[1:], d, self.DERVALS)
 
-                ret[coords] += self.WGHT[inds] * tmp
+                            B = self.B(q, d, self.pars)
+                            Bdqdx = dot(B, dqdx)
 
-    def solve(self, qh, dt, dX):
+                            tmp -= Bdqdx / dX[d]
+
+                    ret[coords] += self.WGHT[inds] * tmp
+
+    def solve(self, qh, dt, dX, mask=None):
         """ Returns the space-time averaged interface terms, jump terms,
             source terms, and non-conservative terms
         """
@@ -142,8 +148,8 @@ class FVSolver():
         ret = zeros([s - 2 for s in qh.shape[:self.NDIM]] + [self.NV])
 
         if self.S is not None or self.B is not None:
-            self.centers(ret, qh, dX)
+            self.centers(ret, qh, dX, mask)
 
-        self.interfaces(ret, qEnd, dX)
+        self.interfaces(ret, qEnd, dX, mask)
 
         return dt * ret

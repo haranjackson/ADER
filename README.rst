@@ -11,6 +11,10 @@ An arbitrary number of spatial domains can be used, and this implementation is
 capable of solving the equations to any order of accuracy. Second-order
 parabolic PDEs will be implemented soon.
 
+.. image:: https://travis-ci.org/haranjackson/ADER.svg?master
+   :target: https://travis-ci.org/haranjackson/ADER
+   :alt: Build Status
+
 Installation
 ------------
 

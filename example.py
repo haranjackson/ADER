@@ -66,6 +66,5 @@ def reactive_euler_test():
 
 
 if __name__ == "__main__":
-    print("Uncomment the test you would like to see")
-    # sol_gpr = gpr_test()
-    # sol_reactive_euler = reactive_euler_test()
+    sol_gpr = gpr_test()
+    sol_reactive_euler = reactive_euler_test()

@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
 from ader.solver import Solver
@@ -23,14 +22,18 @@ def gpr_test():
     sol = S.solve(initial_grid, final_time, dX, cfl=0.9, verbose=True)
 
     # Plot the velocity in the y-axis
-    n = len(initial_grid)
-    x = np.linspace(0, 1, n)
-    plt.plot(x, sol[:, 3] / sol[:, 0], 'x', label='solver')
-    plt.plot(x, first_stokes_problem_exact(n=n), label='exact')
-    plt.legend()
-    plt.title("The GPR Model: Stokes' First Problem")
-    plt.xlabel('x')
-    plt.ylabel('y-velocity')
+    try:
+        import matplotlib.pyplot as plt
+        n = len(initial_grid)
+        x = np.linspace(0, 1, n)
+        plt.plot(x, sol[:, 3] / sol[:, 0], 'x', label='solver')
+        plt.plot(x, first_stokes_problem_exact(n=n), label='exact')
+        plt.legend()
+        plt.title("The GPR Model: Stokes' First Problem")
+        plt.xlabel('x')
+        plt.ylabel('y-velocity')
+    except:
+        print("NOTE: Install matplotlib to plot results")
 
     return sol
 
@@ -55,12 +58,16 @@ def reactive_euler_test():
                   callback=callback)
 
     # plot density at 6 different evenly-spaced times
-    x = np.linspace(0, 1, len(initial_grid))
-    for i in np.linspace(0, len(grids) - 1, 6, dtype=int):
-        plt.plot(x, grids[i][:, 0])
-    plt.title("Reactive Euler: Shock-Induced Detonation")
-    plt.xlabel('x')
-    plt.ylabel('density')
+    try:
+        import matplotlib.pyplot as plt
+        x = np.linspace(0, 1, len(initial_grid))
+        for i in np.linspace(0, len(grids) - 1, 6, dtype=int):
+            plt.plot(x, grids[i][:, 0])
+        plt.title("Reactive Euler: Shock-Induced Detonation")
+        plt.xlabel('x')
+        plt.ylabel('density')
+    except:
+        print("NOTE: Install matplotlib to plot results")
 
     return sol
 

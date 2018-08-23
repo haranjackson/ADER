@@ -1,7 +1,15 @@
 language: python
 python:
-  - "3.6"
+- '3.6'
+- '3.7'
 install:
-  - pip install .
+- pip install .
 script:
-  - python example.py
+- python example.py
+deploy:
+  provider: pypi
+  user: haranjackson
+  password:
+    secure: fNjDR9rTtepp0imljEG1qrKJhPebMMUN6UdmrtWPGncITvXVJnJhXCLmQ8m/SBvj0WJZrmqVUgPBQoajmuzFJrzLHl+dqn59aPoV7ZUVFLSWS7UGJFNGd0Zx3LLEfsvq/uFUXZ4+Stb9XwVeE0rpjdFwxdNRFOvfAI/4UDg69l6G2G+bm4PzwQIsymIsc/k9qU8m8PIHmvj2yklwJ1X2YB2kEBfGxPC54sAu/4+aK3ixtMORcPNtQKwBoxUg2kMVydIFUJGP8jFohK3zl4odsS5Cv9A+ltGiBLHwLMfhK7qa5QrjwlQwFpYn0m+uL2kIsIH9bQAiLwHc9BmLRfEp2WwTp/XjqaP6lDzEVPzb6KWdikexHL6jlHqWWsrMnCextZ3Vsov+yrz1pcuDXWOg1tVkVvcfrsd+iUvWkbjqeoSU3ydtpZE5439901aCKH9/f2sdFYqUlG5zk5h+FZteUpEyDcumSYWjjhdKiyDnYapKMRFHIAeJVutAkS7N0++sgUTzQICbXbSeXXJe1IYNKDM9SLS2LyQLq5DiSyjk7MR1eP+4dgmDzCu5F3OT55RZddRQe/NMvkPeFD+lgK0x3nPUCoTnUVhRiQ+HmED3L2UMVw6KLQbvbUkaYQvamZLt1TfrigKYn728q6oezW7+X/vrNDz7tNkz6kpwxHxPCWU=
+  on:
+    tags: true

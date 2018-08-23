@@ -22,9 +22,9 @@ Requires Python 3.6+. Run ``pip install ader``
 
 The following dependencies will be installed:
 
--  NumPy 1.13+
--  SciPy 0.19+
--  Tangent 0.1.9+
+-  NumPy 1.14.5
+-  SciPy 1.1.0
+-  Tangent 0.1.9
 
 Background
 ----------

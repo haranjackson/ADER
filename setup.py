@@ -26,10 +26,11 @@ setup(
     'Intended Audience :: Science/Research',
     'License :: OSI Approved :: MIT License',
     'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
     'Topic :: Scientific/Engineering :: Atmospheric Science',
     'Topic :: Scientific/Engineering :: Chemistry',
     'Topic :: Scientific/Engineering :: Mathematics',
     'Topic :: Scientific/Engineering :: Physics'
   ],
-  install_requires=['numpy>=1.13', 'scipy>=0.19', 'tangent>=0.1.9']
+  install_requires=['numpy==1.14.5', 'scipy==1.1.0', 'tangent==0.1.9']
 )

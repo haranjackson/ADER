@@ -18,7 +18,7 @@ parabolic PDEs will be implemented soon.
 Installation
 ------------
 
-Requires Python 3.6+. Run ``pip install ader``
+Requires Python 3.6. Run ``pip install ader``
 
 The following dependencies will be installed:
 

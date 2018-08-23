@@ -111,7 +111,7 @@ them to order 3, with 4 CPU cores, we set up the solver object thus:
 
 ::
 
-    from ader.solver import Solver
+    from ader import Solver
 
     solver = Solver(nvar=5, ndim=2, F=F, B=None, S=S, model_params=model_params, order=3, ncore=4)
 

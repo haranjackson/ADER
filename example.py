@@ -1,6 +1,6 @@
 import numpy as np
 
-from ader.solver import Solver
+from ader import Solver
 
 
 def gpr_test():

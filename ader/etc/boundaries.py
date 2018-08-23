@@ -42,10 +42,11 @@ def standard_BC(u, N, NDIM, wall=None, reflectVars=None):
 
         if wall_:
             shape = ret.shape
-            n1 = prod(shape[:d])
+            n1 = int(prod(shape[:d]))
             n2 = shape[d]
-            n3 = prod(shape[d + 1: NDIM])
-            ret.reshape(n1, n2, n3, -1)[:, endCells, :, reflectVars] *= -1
+            n3 = int(prod(shape[d + 1: NDIM]))
+            for v in reflectVars:
+                ret.reshape(n1, n2, n3, -1)[:, endCells, :, v] *= -1
 
     return ret
 

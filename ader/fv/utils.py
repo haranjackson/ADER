@@ -1,6 +1,14 @@
 from itertools import product
 
-from numpy import arange, array, zeros
+from numpy import arange, array, tensordot, zeros
+
+
+def endpoints(qh, NDIM, ENDVALS):
+    """ Returns tensor T where T[d,e,i1,...,in] is the set of DG coefficients
+        in the dth direction, at end e (either 0 or 1), in cell (i1,...,in)
+    """
+    return array([tensordot(ENDVALS, qh, (0, NDIM + 1 + d))
+                  for d in range(NDIM)])
 
 
 def quad_weights(N, NDIM, WGHTS, time_rec=True):

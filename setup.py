@@ -13,7 +13,7 @@ def open_file(fname):
 setup(
     name='ader',
     packages=['ader', 'ader.etc', 'ader.dg', 'ader.fv', 'ader.weno'],
-    version='1.2.0',
+    version='1.2.1',
     description=
     'The ADER method for solving any (potentially very stiff) hyperbolic system of PDEs',
     long_description=open_file('README.rst').read(),

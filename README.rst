@@ -4,7 +4,7 @@ ADER
 A Python implementation of the ADER method for solving any (potentially very
 stiff) hyperbolic system of PDEs of the following form:
 
-.. figure:: http://quicklatex.com/cache3/62/ql_33e88941162f23715cd5b8592091e462_l3.png
+.. figure:: https://github.com/haranjackson/ADER/raw/master/images/eq1.png
    :alt: Figure 1
 
 An arbitrary number of spatial domains can be used, and this implementation is
@@ -75,12 +75,12 @@ If required, the source terms must be defined as a NumPy array thus:
 
 Note that the governing system of PDEs can be written as:
 
-.. figure:: http://quicklatex.com/cache3/6b/ql_68336e49eb09211a82222f71d95fdc6b_l3.png
+.. figure:: https://github.com/haranjackson/ADER/raw/master/images/eq2.png
    :alt: Figure 2
 
 where the system Jacobian M corresponds to:
 
-.. figure:: http://quicklatex.com/cache3/26/ql_ed85591a23b23474453fa35eb5a05426_l3.png
+.. figure:: https://github.com/haranjackson/ADER/raw/master/images/eq3.png
    :alt: Figure 3
 
 If an analytical form for M is known, it should be defined thus:

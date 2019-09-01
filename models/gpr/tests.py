@@ -42,8 +42,15 @@ def first_stokes_problem_IC(μ=1e-2, n=100, v0=0.1, final_time=1):
     pR = 1 / γ
     vR = array([0, v0, 0])
 
-    model_params = material_parameters(EOS='sg', ρ0=1, cv=1, p0=1/γ, γ=γ, cs=1,
-                                       cα=1e-16, μ=μ, Pr=0.75)
+    model_params = material_parameters(EOS='sg',
+                                       ρ0=1,
+                                       cv=1,
+                                       p0=1 / γ,
+                                       γ=γ,
+                                       cs=1,
+                                       cα=1e-16,
+                                       μ=μ,
+                                       Pr=0.75)
     dX = [Lx / n]
 
     return riemann_IC(final_time, n, dX, ρL, pL, vL, ρR, pR, vR, model_params)

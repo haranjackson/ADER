@@ -51,7 +51,7 @@ def D_ROE(obj, qL, qR, d):
     λ, R = eig(M, overwrite_a=1, check_finite=False)
     with catch_warnings():
         simplefilter("ignore")
-        b = solve(R, Δq, overwrite_b = True, check_finite=False)
+        b = solve(R, Δq, overwrite_b=True, check_finite=False)
 
     fL = obj.F(qL, d, obj.pars)
     fR = obj.F(qR, d, obj.pars)

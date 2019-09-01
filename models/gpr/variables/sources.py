@@ -20,8 +20,8 @@ def theta1inv(ρ, A, MP):
         n = MP.n
         σ = sigma(ρ, A, MP)
         sn = sigma_norm(σ)
-        sn = min(sn, 1e8)   # Hacky fix
-        return 3 * det(A)**(5 / 3) / (cs2 * τ1) * (sn / σY) ** n
+        sn = min(sn, 1e8)  # Hacky fix
+        return 3 * det(A)**(5 / 3) / (cs2 * τ1) * (sn / σY)**n
     else:
         return 3 * det(A)**(5 / 3) / (cs2 * τ1)
 

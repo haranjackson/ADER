@@ -70,7 +70,7 @@ def dΓ_MG(ρ, MP):
     elif EOS == SHOCK_MG:
         Γ0 = MP.Γ0
         ρ0 = MP.ρ0
-        return - Γ0 * ρ0 / ρ**2
+        return -Γ0 * ρ0 / ρ**2
 
 
 def dp_ref(ρ, MP):
@@ -97,14 +97,14 @@ def de_ref(ρ, MP):
     EOS = MP.EOS
 
     if EOS == STIFFENED_GAS:
-        return - MP.pINF / ρ**2
+        return -MP.pINF / ρ**2
 
     elif EOS == SHOCK_MG:
         c02 = MP.c02
         ρ0 = MP.ρ0
         s = MP.s
         if ρ > ρ0:
-            return - (ρ - ρ0) * ρ0 * c02 / (s * (ρ - ρ0) - ρ)**3
+            return -(ρ - ρ0) * ρ0 * c02 / (s * (ρ - ρ0) - ρ)**3
         else:
             return 0
 
@@ -167,7 +167,7 @@ def dTdρ(ρ, p, MP):
     dΓ = dΓ_MG(ρ, MP)
     pr = p_ref(ρ, MP)
     dpr = dp_ref(ρ, MP)
-    return - (dpr * ρ * Γ + (Γ + ρ * dΓ) * (p - pr)) / (ρ * Γ)**2 / cv
+    return -(dpr * ρ * Γ + (Γ + ρ * dΓ) * (p - pr)) / (ρ * Γ)**2 / cv
 
 
 def dTdp(ρ, MP):

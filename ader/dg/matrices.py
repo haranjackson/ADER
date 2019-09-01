@@ -15,9 +15,9 @@ def kron_prod(matList):
 def inner_products(N, NODES, WGHTS, ψ, dψ):
     """ Inner products required for Galerkin matrices
     """
-    I11 = zeros([N, N])                           # I11[a,b] = ψ_a(1) * ψ_b(1)
-    I1 = zeros([N, N])                            # I1[a,b] = ψ_a • ψ_b
-    I2 = zeros([N, N])                            # I2[a,b] = ψ_a • ψ_b'
+    I11 = zeros([N, N])  # I11[a,b] = ψ_a(1) * ψ_b(1)
+    I1 = zeros([N, N])  # I1[a,b] = ψ_a • ψ_b
+    I2 = zeros([N, N])  # I2[a,b] = ψ_a • ψ_b'
     I = eye(N)
 
     for a, b in product(range(N), range(N)):
@@ -33,10 +33,12 @@ def inner_products(N, NODES, WGHTS, ψ, dψ):
 
 def galerkin_matrices(N, NV, NDIM, basis):
 
-    I11, I1, I2, I = inner_products(N, basis.NODES, basis.WGHTS, basis.ψ, basis.dψ)
+    I11, I1, I2, I = inner_products(N, basis.NODES, basis.WGHTS, basis.ψ,
+                                    basis.dψ)
 
     # Matrix multiplying WENO reconstruction
-    DG_W = concatenate([basis.ψ[a](0) * kron_prod([I1] * NDIM) for a in range(N)])
+    DG_W = concatenate(
+        [basis.ψ[a](0) * kron_prod([I1] * NDIM) for a in range(N)])
 
     # Stiffness matrices
     DG_V = zeros([NDIM, N**(NDIM + 1), N**(NDIM + 1)])

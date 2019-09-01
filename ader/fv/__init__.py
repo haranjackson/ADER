@@ -9,8 +9,18 @@ from ader.fv.utils import endpoints, quad_weights
 
 class FVSolver():
 
-    def __init__(self, N, NV, NDIM, F, S=None, B=None, M=None, max_eig=None,
-                 pars=None, riemann_solver='rusanov', time_rec=True):
+    def __init__(self,
+                 N,
+                 NV,
+                 NDIM,
+                 F,
+                 S=None,
+                 B=None,
+                 M=None,
+                 max_eig=None,
+                 pars=None,
+                 riemann_solver='rusanov',
+                 time_rec=True):
 
         self.N = N
         self.NV = NV
@@ -40,8 +50,8 @@ class FVSolver():
         self.WGHTS = basis.WGHTS
         self.ENDVALS = basis.ENDVALS
         self.DERVALS = basis.DERVALS
-        self.TN, self.WGHT, self.WGHT_END = quad_weights(N, NDIM, basis.WGHTS,
-                                                         time_rec)
+        self.TN, self.WGHT, self.WGHT_END = quad_weights(
+            N, NDIM, basis.WGHTS, time_rec)
 
     def interfaces(self, ret, qEnd, dX, mask):
         """ Returns the contribution to the finite volume update coming from
@@ -69,21 +79,22 @@ class FVSolver():
                     qR = qEnd[(d, 0) + rcoords].reshape(nweights, self.NV)
 
                     # integrate the flux over the surface normal to direction d
-                    fInt = zeros(self.NV)    # flux from conservative terms
-                    BInt = zeros(self.NV)    # flux from non-conservative terms
+                    fInt = zeros(self.NV)  # flux from conservative terms
+                    BInt = zeros(self.NV)  # flux from non-conservative terms
                     for ind in range(nweights):
                         qL_ = qL[ind]
                         qR_ = qR[ind]
 
-                        fInt += self.WGHT_END[ind] * self.D_FUN(self,
-                                                                qL_, qR_, d)
+                        fInt += self.WGHT_END[ind] * self.D_FUN(
+                            self, qL_, qR_, d)
 
                         if self.B is not None:
-                            BInt += self.WGHT_END[ind] * B_INT(self,
-                                                               qL_, qR_, d)
+                            BInt += self.WGHT_END[ind] * B_INT(
+                                self, qL_, qR_, d)
 
                     rcoords_ = tuple(c - 1 for c in rcoords)
-                    lcoords_ = rcoords_[:d] + (rcoords_[d] - 1,) + rcoords_[d + 1:]
+                    lcoords_ = rcoords_[:d] + (rcoords_[d] - 1,) + rcoords_[d +
+                                                                            1:]
 
                     if lcoords_[d] >= 0:
                         ret[lcoords_] -= (fInt + BInt) / dX[d]

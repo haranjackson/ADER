@@ -14,8 +14,14 @@ def gpr_test():
     initial_grid, model_params, final_time, dX = first_stokes_problem_IC()
 
     # Set up the solver
-    S = Solver(nvar=17, ndim=1, F=F_gpr, B=B_gpr, S=S_gpr,
-               model_params=model_params, M=M_gpr, max_eig=max_eig_gpr,
+    S = Solver(nvar=17,
+               ndim=1,
+               F=F_gpr,
+               B=B_gpr,
+               S=S_gpr,
+               model_params=model_params,
+               M=M_gpr,
+               max_eig=max_eig_gpr,
                ncore=4)
 
     # Solve for the data given
@@ -51,10 +57,17 @@ def reactive_euler_test():
 
     initial_grid, model_params, final_time, dX = shock_induced_detonation_IC()
 
-    S = Solver(nvar=6, ndim=1, F=F_reactive_euler, S=S_reactive_euler,
+    S = Solver(nvar=6,
+               ndim=1,
+               F=F_reactive_euler,
+               S=S_reactive_euler,
                model_params=model_params)
 
-    sol = S.solve(initial_grid, final_time, dX, cfl=0.6, verbose=True,
+    sol = S.solve(initial_grid,
+                  final_time,
+                  dX,
+                  cfl=0.6,
+                  verbose=True,
                   callback=callback)
 
     # plot density at 6 different evenly-spaced times

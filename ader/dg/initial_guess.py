@@ -27,7 +27,7 @@ def stiff_initial_guess(obj, w, dt, dX):
         # loop over the indices of each spatial node
         for inds in product(*indList):
 
-            q_ = qt[inds]     # the value of q at the current spatial node
+            q_ = qt[inds]  # the value of q at the current spatial node
 
             Mdqdx = zeros(obj.NV)
             for d in range(obj.NDIM):

@@ -10,17 +10,15 @@ def extend_grid(arr, ext, d, kind):
     n = arr.shape[d]
 
     if kind == 0:
-        reps = concatenate((zeros(ext),
-                            arange(n),
-                            (n - 1) * ones(ext))).astype(int64)
+        reps = concatenate(
+            (zeros(ext), arange(n), (n - 1) * ones(ext))).astype(int64)
     elif kind == 1:
-        reps = concatenate((flip(arange(ext), 0),
-                            arange(n),
-                            flip(arange(n - ext, n), 0))).astype(int64)
+        reps = concatenate((flip(arange(ext),
+                                 0), arange(n), flip(arange(n - ext, n),
+                                                     0))).astype(int64)
     elif kind == 2:
-        reps = concatenate((arange(n - ext, n),
-                            arange(n),
-                            arange(ext))).astype(int64)
+        reps = concatenate((arange(n - ext,
+                                   n), arange(n), arange(ext))).astype(int64)
 
     return arr.take(reps, axis=d)
 
@@ -44,7 +42,7 @@ def standard_BC(u, N, NDIM, wall=None, reflectVars=None):
             shape = ret.shape
             n1 = int(prod(shape[:d]))
             n2 = shape[d]
-            n3 = int(prod(shape[d + 1: NDIM]))
+            n3 = int(prod(shape[d + 1:NDIM]))
             for v in reflectVars:
                 ret.reshape(n1, n2, n3, -1)[:, endCells, :, v] *= -1
 

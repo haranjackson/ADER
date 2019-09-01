@@ -55,10 +55,10 @@ class WENOSolver():
     def stencils(self, strip, ind):
         """ Returns the set of stencils along strip at position ind
         """
-        uL = strip[ind - self.N + 1: ind + 1]
-        uR = strip[ind: ind + self.N]
-        uCL = strip[ind - self.cN: ind + self.fN + 1]
-        uCR = strip[ind - self.fN: ind + self.cN + 1]
+        uL = strip[ind - self.N + 1:ind + 1]
+        uR = strip[ind:ind + self.N]
+        uCL = strip[ind - self.cN:ind + self.fN + 1]
+        uCR = strip[ind - self.fN:ind + self.cN + 1]
         return uL, uR, uCL, uCR
 
     def solve(self, uBC):
@@ -78,7 +78,7 @@ class WENOSolver():
             # in this dimension at each end. We group the remaining dimensions.
             shape = rec.shape
             shape0 = shape[:d]
-            shape1 = shape[d + 1: self.NDIM]
+            shape1 = shape[d + 1:self.NDIM]
 
             n1 = int(prod(shape0))
             n2 = shape[d] - 2 * (self.N - 1)
@@ -88,12 +88,13 @@ class WENOSolver():
             tmp = zeros([n1, n2, n3, n4, self.N, self.NV])
             rec_ = rec.reshape(n1, shape[d], n3, n4, self.NV)
 
-            for i, j, k, a in product(range(n1), range(n2), range(n3), range(n4)):
+            for i, j, k, a in product(range(n1), range(n2), range(n3),
+                                      range(n4)):
                 strip = rec_[i, :, k, a]
                 uL, uR, uCL, uCR = self.stencils(strip, j + self.N - 1)
                 self.coeffs(tmp[i, j, k, a], uL, uR, uCL, uCR)
 
-            rec = tmp.reshape(shape0 + (n2,) + shape1 +
-                              (self.N,) * (d + 1) + (self.NV,))
+            rec = tmp.reshape(shape0 + (n2,) + shape1 + (self.N,) * (d + 1) +
+                              (self.NV,))
 
         return rec

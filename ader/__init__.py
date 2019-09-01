@@ -140,11 +140,27 @@ class Solver():
     6. Dumbser, Toro - *A simple extension of the Osher Riemann solver to
        non-conservative hyperbolic systems*
     """
-    def __init__(self, nvar, ndim, F, B=None, S=None, model_params=None,
-                 M=None, max_eig=None, order=2, ncore=1,
-                 riemann_solver='rusanov', stiff_dg=False,
-                 stiff_dg_guess=False, newton_dg_guess=False,
-                 DG_TOL=6e-6, DG_MAX_ITER=50, WENO_r=8, WENO_λc=1e5, WENO_λs=1,
+
+    def __init__(self,
+                 nvar,
+                 ndim,
+                 F,
+                 B=None,
+                 S=None,
+                 model_params=None,
+                 M=None,
+                 max_eig=None,
+                 order=2,
+                 ncore=1,
+                 riemann_solver='rusanov',
+                 stiff_dg=False,
+                 stiff_dg_guess=False,
+                 newton_dg_guess=False,
+                 DG_TOL=6e-6,
+                 DG_MAX_ITER=50,
+                 WENO_r=8,
+                 WENO_λc=1e5,
+                 WENO_λs=1,
                  WENO_ε=1e-14):
 
         self.NV = nvar
@@ -166,18 +182,37 @@ class Solver():
         else:
             self.max_eig = max_eig
 
-        self.wenoSolver = WENOSolver(self.N, self.NV, self.NDIM, λc=WENO_λc,
-                                     λs=WENO_λs, r=WENO_r, ε=WENO_ε)
+        self.wenoSolver = WENOSolver(self.N,
+                                     self.NV,
+                                     self.NDIM,
+                                     λc=WENO_λc,
+                                     λs=WENO_λs,
+                                     r=WENO_r,
+                                     ε=WENO_ε)
 
-        self.dgSolver = DGSolver(self.N, self.NV, self.NDIM, F=self.F,
-                                 S=self.S, B=self.B, M=self.M, pars=self.pars,
-                                 stiff=stiff_dg, stiff_guess=stiff_dg_guess,
-                                 newton_guess=newton_dg_guess, tol=DG_TOL,
+        self.dgSolver = DGSolver(self.N,
+                                 self.NV,
+                                 self.NDIM,
+                                 F=self.F,
+                                 S=self.S,
+                                 B=self.B,
+                                 M=self.M,
+                                 pars=self.pars,
+                                 stiff=stiff_dg,
+                                 stiff_guess=stiff_dg_guess,
+                                 newton_guess=newton_dg_guess,
+                                 tol=DG_TOL,
                                  max_iter=DG_MAX_ITER)
 
-        self.fvSolver = FVSolver(self.N, self.NV, self.NDIM, F=self.F,
-                                 S=self.S, B=self.B, M=self.M,
-                                 max_eig=self.max_eig, pars=self.pars,
+        self.fvSolver = FVSolver(self.N,
+                                 self.NV,
+                                 self.NDIM,
+                                 F=self.F,
+                                 S=self.S,
+                                 B=self.B,
+                                 M=self.M,
+                                 max_eig=self.max_eig,
+                                 pars=self.pars,
                                  riemann_solver=riemann_solver)
 
         self.ncore = ncore
@@ -236,8 +271,10 @@ class Solver():
             maskBlocks = [None] * n
         else:
             maskBC_ = extend_grid(maskBC, self.N - 1, 0, 0)
-            maskBlocks = [mb[self.N - 1 : -(self.N - 1)]
-                          for mb in get_blocks(maskBC_, self.N, self.ncore)]
+            maskBlocks = [
+                mb[self.N - 1:-(self.N - 1)]
+                for mb in get_blocks(maskBC_, self.N, self.ncore)
+            ]
 
         chunks = executor.map(self.ader_stepper, blocks, [dt] * n, [False] * n,
                               maskBlocks)
@@ -292,8 +329,14 @@ class Solver():
 
         return self.u
 
-    def solve(self, initial_grid, final_time, dX, cfl=0.9,
-              boundary_conditions='transitive', verbose=False, callback=None):
+    def solve(self,
+              initial_grid,
+              final_time,
+              dX,
+              cfl=0.9,
+              boundary_conditions='transitive',
+              verbose=False,
+              callback=None):
         """ Solves the system of PDEs, given the initial grid and final time.
 
         Parameters

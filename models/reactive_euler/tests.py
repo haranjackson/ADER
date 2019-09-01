@@ -5,11 +5,7 @@ from models.reactive_euler.system import energy
 
 def shock_induced_detonation_IC():
 
-    MP = {'γ': 1.4,
-          'cv': 2.5,
-          'Qc': 1,
-          'Ti': 0.25,
-          'K0': 250}
+    MP = {'γ': 1.4, 'cv': 2.5, 'Qc': 1, 'Ti': 0.25, 'K0': 250}
 
     nx = 400
 

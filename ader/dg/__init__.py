@@ -10,9 +10,21 @@ from ader.dg.matrices import galerkin_matrices
 
 class DGSolver():
 
-    def __init__(self, N, NV, NDIM, F, S=None, B=None, M=None, pars=None,
-                 stiff=False, stiff_guess=False, newton_guess=False, tol=1e-6,
-                 max_iter=50, max_size=1e16):
+    def __init__(self,
+                 N,
+                 NV,
+                 NDIM,
+                 F,
+                 S=None,
+                 B=None,
+                 M=None,
+                 pars=None,
+                 stiff=False,
+                 stiff_guess=False,
+                 newton_guess=False,
+                 tol=1e-6,
+                 max_iter=50,
+                 max_size=1e16):
 
         self.N = N
         self.NV = NV
@@ -40,7 +52,7 @@ class DGSolver():
         self.GAPS = basis.GAPS
         self.DERVALS = basis.DERVALS
         self.DG_W, self.DG_V, self.DG_U, self.DG_M, self.DG_D = galerkin_matrices(
-                N, NV, NDIM, basis)
+            N, NV, NDIM, basis)
 
     def rhs(self, q, Ww, dt, dX):
         """ Returns the right-handside of the system governing coefficients of qh
@@ -82,7 +94,9 @@ class DGSolver():
         """
         q = self.initial_guess(self, w, dt, dX)
 
-        def f(x): return dot(self.DG_U, x) - self.rhs(x, Ww, dt, dX)
+        def f(x):
+            return dot(self.DG_U, x) - self.rhs(x, Ww, dt, dX)
+
         return newton_krylov(f, q, f_tol=self.tol, method='bicgstab')
 
     def solve(self, wh, dt, dX, mask=None):

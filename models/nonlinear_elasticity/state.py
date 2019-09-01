@@ -20,7 +20,8 @@ def GdWdG(G, I1, I2, I3, B0, β):
     """ Returns G * dW/dG
     """
     const = B0 / 2 * I3**(β / 2)
-    return const * ((β / 2) * (I1**2 / 3 - I2) * eye(3) - I1 / 3 * G + dot(G, G))
+    return const * ((β / 2) *
+                    (I1**2 / 3 - I2) * eye(3) - I1 / 3 * G + dot(G, G))
 
 
 def sigma(ρ, F, S, MP):
@@ -40,7 +41,8 @@ def sigma(ρ, F, S, MP):
     I2 = I_2(G)
     I3 = I_3(G)
 
-    GdedG = GdU_1dG(I3, K0, α) + GdU_2dG(I3, S, cv, T0, γ) + GdWdG(G, I1, I2, I3, B0, β)
+    GdedG = GdU_1dG(I3, K0, α) + GdU_2dG(I3, S, cv, T0, γ) + GdWdG(
+        G, I1, I2, I3, B0, β)
     return -2 * ρ * GdedG
 
 

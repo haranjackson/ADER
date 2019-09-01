@@ -5,8 +5,8 @@ from models.gpr.variables.state import temperature
 
 
 class EOS_params():
-    def __init__(self, EOS, ρ0, cv, p0, Tref,
-                 γ, pINF, c0, Γ0, s):
+
+    def __init__(self, EOS, ρ0, cv, p0, Tref, γ, pINF, c0, Γ0, s):
 
         self.EOS = eos_text_to_code(EOS)
 
@@ -25,11 +25,8 @@ class EOS_params():
             self.s = s
 
 
-def params(MP, Rc, EOS, THERMAL,
-           ρ0, p0, Tref, T0, cv,
-           γ, pINF, c0, Γ0, s, e0,
-           cs, τ1, μ, σY, n, PLASTIC,
-           cα, τ2):
+def params(MP, Rc, EOS, THERMAL, ρ0, p0, Tref, T0, cv, γ, pINF, c0, Γ0, s, e0,
+           cs, τ1, μ, σY, n, PLASTIC, cα, τ2):
 
     MP.Rc = Rc
     MP.EOS = eos_text_to_code(EOS)
@@ -63,15 +60,30 @@ def params(MP, Rc, EOS, THERMAL,
         MP.τ2 = τ2
 
 
-def material_parameters(EOS, ρ0, cv, p0, cs,
-                        Tref=None, γ=None, pINF=None,
-                        c0=None, Γ0=None, s=None, e0=None,
-                        μ=None, τ1=None, σY=None, n=None, PLASTIC=False,
-                        cα=None, κ=None, Pr=None,
+def material_parameters(EOS,
+                        ρ0,
+                        cv,
+                        p0,
+                        cs,
+                        Tref=None,
+                        γ=None,
+                        pINF=None,
+                        c0=None,
+                        Γ0=None,
+                        s=None,
+                        e0=None,
+                        μ=None,
+                        τ1=None,
+                        σY=None,
+                        n=None,
+                        PLASTIC=False,
+                        cα=None,
+                        κ=None,
+                        Pr=None,
                         Rc=8.31445985):
     """ An object to hold the material constants
     """
-    assert(EOS in ['sg', 'smg', 'gr'])
+    assert (EOS in ['sg', 'smg', 'gr'])
 
     if Tref is None:
         Tref = 0
@@ -96,10 +108,7 @@ def material_parameters(EOS, ρ0, cv, p0, cs,
 
     MP = SimpleNamespace()
 
-    params(MP, Rc, EOS, THERMAL,
-           ρ0, p0, Tref, T0, cv,
-           γ, pINF, c0, Γ0, s, e0,
-           cs, τ1, μ, σY, n, PLASTIC,
-           cα, τ2)
+    params(MP, Rc, EOS, THERMAL, ρ0, p0, Tref, T0, cv, γ, pINF, c0, Γ0, s, e0,
+           cs, τ1, μ, σY, n, PLASTIC, cα, τ2)
 
     return MP

@@ -9,4 +9,4 @@ def get_blocks(arr, N, ncore):
     step = int(n / ncore)
     inds = array([i * step for i in range(ncore)] + [n - N])
     inds[0] += N
-    return [arr[inds[i] - N: inds[i + 1] + N] for i in range(len(inds) - 1)]
+    return [arr[inds[i] - N:inds[i + 1] + N] for i in range(len(inds) - 1)]

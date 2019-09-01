@@ -62,12 +62,12 @@ def S_gpr(Q, MP):
 
     ψ = P.ψ()
     θ1_1 = P.θ1_1()
-    ret[5:14] = - ψ.ravel() * θ1_1
+    ret[5:14] = -ψ.ravel() * θ1_1
 
     if MP.THERMAL:
         H = P.H()
         θ2_1 = P.θ2_1()
-        ret[14:17] = - ρ * H * θ2_1
+        ret[14:17] = -ρ * H * θ2_1
 
     return ret
 
